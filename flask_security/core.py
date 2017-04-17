@@ -172,7 +172,7 @@ _default_messages = {
     'PASSWORD_CHANGE': (
         'You successfully changed your password.', 'success'),
     'LOGIN': (
-        'Please log in to access this page.', 'info'),
+        'Please log in to access this page.', 'warning'),
     'REFRESH': (
         'Please reauthenticate to access this page.', 'info'),
 }

@@ -168,11 +168,11 @@ def token_login(token):
     expired, invalid, user = login_token_status(token)
 
     if invalid:
-        do_flash(*get_message('INVALID_LOGIN_TOKEN'))
+        do_flash(*get_message('INVALID_LOGIN_TOKEN'), category='error')
     if expired:
         send_login_instructions(user)
         do_flash(*get_message('LOGIN_EXPIRED', email=user.email,
-                              within=_security.login_within))
+                              within=_security.login_within), category='error')
     if invalid or expired:
         return redirect(url_for('login'))
 
@@ -213,11 +213,11 @@ def confirm_email(token):
 
     if not user or invalid:
         invalid = True
-        do_flash(*get_message('INVALID_CONFIRMATION_TOKEN'))
+        do_flash(*get_message('INVALID_CONFIRMATION_TOKEN'), category='error')
     if expired:
         send_confirmation_instructions(user)
         do_flash(*get_message('CONFIRMATION_EXPIRED', email=user.email,
-                              within=_security.confirm_email_within))
+                              within=_security.confirm_email_within), category='error')
     if invalid or expired:
         return redirect(get_url(_security.confirm_error_view) or
                         url_for('send_confirmation'))

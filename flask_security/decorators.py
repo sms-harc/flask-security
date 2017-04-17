@@ -52,7 +52,7 @@ def _get_unauthorized_view():
                 view = url_for(view)
             except BuildError:
                 view = None
-        utils.do_flash(*utils.get_message('UNAUTHORIZED'))
+        utils.do_flash(*utils.get_message('UNAUTHORIZED'), category='error')
         return redirect(view or request.referrer or '/')
     abort(403)
 
