@@ -35,23 +35,26 @@ def separate_names (name, alt_name=None):
 
     # Pop first item in list
     first_name = names.pop(0)
-    middle_name = None
+    # middle_name = None
     last_name = None
 
     if len (names):
         # Pop last item of list
-        last_name = names.pop()
+        # last_name = names.pop()
+
+        # We got rid of middle name so now the rest of the names are last name
+        last_name = ' '.join(names)
 
     elif alt_name:
         last_name = alt_name
 
-    if len (names):
-        # Middle name(s) are the rest of the list
-        middle_name = ' '.join(names)
+    # if len (names):
+    #     # Middle name(s) are the rest of the list
+    #     middle_name = ' '.join(names)
 
     return {
         "first_name": first_name,
-        "middle_name": middle_name if middle_name else '',
+        # "middle_name": middle_name if middle_name else '',
         "last_name": last_name if last_name else ''
     }
 
@@ -76,9 +79,6 @@ def register_user(**kwargs):
     kwargs['email'] = kwargs['email'].lower()
     user = _datastore.create_user(**kwargs)
     _datastore.commit()
-
-    # Harc modification - setup session state to show tour to new user
-    session['tour_shown'] = False
 
     if _security.confirmable:
         confirmation_link, token = generate_confirmation_link(user)

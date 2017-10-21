@@ -28,7 +28,7 @@ _datastore = LocalProxy(lambda: current_app.extensions['security'].datastore)
 _default_field_labels = {
     'email': 'Email Address',
     'password': 'Password',
-    'remember_me': 'Remember Me',
+    'remember_me': 'Keep me signed in',
     'login': 'Login',
     'register': 'Register',
     'send_confirmation': 'Resend Confirmation Instructions',
