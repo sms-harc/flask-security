@@ -68,10 +68,13 @@ def register_user(**kwargs):
     confirmation_link, token = None, None
     kwargs['password'] = encrypt_password(kwargs['password'])
 
-    # Harc modification to Flask-Security; we need to parse name from form into a dict for embedded name doc
+    # Harc modification to Flask-Security;
+    # we need to parse name from form into a dict for embedded name doc or default it
     if kwargs.get('name', None):
         name_dict = separate_names(kwargs.pop('name'))
         kwargs['name'] = name_dict
+    # else:
+    #     kwargs['name'] = separate_names('New User')
 
 
     # Harc modification - let's make sure email is lowercase; this should have been done by Flask-Security

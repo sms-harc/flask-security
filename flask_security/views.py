@@ -130,6 +130,10 @@ def register():
             return redirect(redirect_url)
         return _render_json(form, include_auth_token=True)
 
+    elif request.method == 'POST':
+        # There was an error
+        do_flash ('An error occurred processing the sign up information - please try again', category='error')
+
     if request.json:
         return _render_json(form)
 
