@@ -159,9 +159,15 @@ _default_messages = {
     'PASSWORD_INVALID_LENGTH': (
         'Password must be at least 6 characters', 'error'),
     'USER_DOES_NOT_EXIST': (
-        'Specified user does not exist', 'error'),
+        # 'Specified user does not exist', 'error'),
+        # Harc Modification: Oct 26, 2017
+        # Wording tweak
+        'No account found for this email address', 'error'),
     'INVALID_PASSWORD': (
-        'Invalid password', 'error'),
+        # 'Invalid password', 'error'),
+        # Harc Modification: Oct 26, 2017
+        # Wording tweak
+        'Incorrect password', 'error'),
     'PASSWORDLESS_LOGIN_SUCCESSFUL': (
         'You have successfully logged in.', 'success'),
     'PASSWORD_RESET': (

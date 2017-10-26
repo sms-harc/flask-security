@@ -245,6 +245,9 @@ def confirm_email(token):
 @anonymous_user_required
 def forgot_password():
     """View function that handles a forgotten password request."""
+
+    # Harc Mod
+    # Include os and requests to support Recaptcha process additions
     import os
     import requests
 
@@ -256,23 +259,27 @@ def forgot_password():
         form = form_class()
 
     if form.validate_on_submit():
-        # Harc - Oct 26
-        # Modified to check Recaptcha prior to sending
-        post_data = {'secret': os.environ.get('GOOGLE_CAPTCHA_SECRET'),
-                     'response': request.values.get('g-recaptcha-response', '')}
-        resp = requests.post(url='https://www.google.com/recaptcha/api/siteverify',
-                             data=post_data)
-                             # remote_ip=current_user.last_login_ip)
-        if resp.status_code != 200:
-            do_flash('Error validating recaptcha - please try again', 'error')
+        # Harc - Oct 26, 2017
+        # Add code to check Recaptcha prior to sending reset email
+        google_captcha_secret = os.environ.get('GOOGLE_CAPTCHA_SECRET', '')
+        if not google_captcha_secret:
+            do_flash('Error validating recaptcha - there was a server error or the server is not configured for recaptcha', 'error')
         else:
-            if not resp.json()['success']:
+            post_data = {'secret': os.environ.get('GOOGLE_CAPTCHA_SECRET', ''),
+                         'response': request.values.get('g-recaptcha-response', '')}
+            resp = requests.post(url='https://www.google.com/recaptcha/api/siteverify',
+                                 data=post_data)
+                                 # remote_ip=current_user.last_login_ip)
+            if resp.status_code != 200:
                 do_flash('Error validating recaptcha - please try again', 'error')
             else:
-                send_reset_password_instructions(form.user)
-                if not request.is_json:
-                    do_flash(*get_message('PASSWORD_RESET_REQUEST',
-                             email=form.user.email))
+                if not resp.json()['success']:
+                    do_flash('Error validating recaptcha - please try again', 'error')
+                else:
+                    send_reset_password_instructions(form.user)
+                    if not request.is_json:
+                        do_flash(*get_message('PASSWORD_RESET_REQUEST',
+                                 email=form.user.email))
 
     if request.json:
         return _render_json(form, include_user=False)
