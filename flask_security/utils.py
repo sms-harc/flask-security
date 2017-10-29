@@ -441,3 +441,48 @@ def capture_reset_password_requests(reset_password_sent_at=None):
         yield reset_requests
     finally:
         reset_password_instructions_sent.disconnect(_on)
+
+
+"""
+Harc Additions - Yay!
+October 28th, 2017
+
+"""
+
+def validate_google_recaptcha (g_recaptcha_response, remote_ip):
+    """
+    This new addition allows for validating a recaptcha embedded in the security form
+    It will return a True or False based on successful check of the recaptcha token
+    We'll also do flashing for failures
+    :param g_recaptcha_response: The google recaptcha response variable submitted with the form
+    :return: True = Success; False= Failure
+    """
+    import os
+    import requests
+
+    validated = False
+
+    google_captcha_secret = os.environ.get('GOOGLE_CAPTCHA_SECRET', '')
+    if not google_captcha_secret:
+        do_flash('Error validating recaptcha - there was a server error or the server is not configured for recaptcha',
+                 'error')
+
+    elif not g_recaptcha_response:
+        do_flash('Error validating recaptcha - there was no valid recaptcha token in the request',
+                 'error')
+
+    else:
+        # Seems we are configured for Google Recaptcha and also we have some kind of token passed in
+        post_data = {'secret': google_captcha_secret,
+                     'response': g_recaptcha_response,
+                     'remote_ip': remote_ip}
+
+        resp = requests.post(url='https://www.google.com/recaptcha/api/siteverify',
+                             data=post_data)
+
+        if resp.status_code != 200:
+            do_flash('Error validating recaptcha - please try again', 'error')
+        else:
+            validated = True  #Success!!!
+
+    return validated

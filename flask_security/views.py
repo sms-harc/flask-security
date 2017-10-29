@@ -26,7 +26,8 @@ from .changeable import change_user_password
 from .registerable import register_user
 from .utils import config_value, do_flash, get_url, get_post_login_redirect, \
     get_post_register_redirect, get_message, login_user, logout_user, \
-    url_for_security as url_for, slash_url_suffix
+    url_for_security as url_for, slash_url_suffix, \
+    validate_google_recaptcha  # Harc Addition to the Utils lib - excellent!!!
 
 # Convenient references
 _security = LocalProxy(lambda: current_app.extensions['security'])
@@ -246,11 +247,6 @@ def confirm_email(token):
 def forgot_password():
     """View function that handles a forgotten password request."""
 
-    # Harc Mod
-    # Include os and requests to support Recaptcha process additions
-    import os
-    import requests
-
     form_class = _security.forgot_password_form
 
     if request.json:
@@ -259,27 +255,18 @@ def forgot_password():
         form = form_class()
 
     if form.validate_on_submit():
+
         # Harc - Oct 26, 2017
         # Add code to check Recaptcha prior to sending reset email
-        google_captcha_secret = os.environ.get('GOOGLE_CAPTCHA_SECRET', '')
-        if not google_captcha_secret:
-            do_flash('Error validating recaptcha - there was a server error or the server is not configured for recaptcha', 'error')
-        else:
-            post_data = {'secret': os.environ.get('GOOGLE_CAPTCHA_SECRET', ''),
-                         'response': request.values.get('g-recaptcha-response', '')}
-            resp = requests.post(url='https://www.google.com/recaptcha/api/siteverify',
-                                 data=post_data)
-                                 # remote_ip=current_user.last_login_ip)
-            if resp.status_code != 200:
-                do_flash('Error validating recaptcha - please try again', 'error')
-            else:
-                if not resp.json()['success']:
-                    do_flash('Error validating recaptcha - please try again', 'error')
-                else:
-                    send_reset_password_instructions(form.user)
-                    if not request.is_json:
-                        do_flash(*get_message('PASSWORD_RESET_REQUEST',
-                                 email=form.user.email))
+        g_recaptcha_response = request.values.get('g-recaptcha-response', '')
+        remote_ip = request.remote_addr
+
+        if validate_google_recaptcha(g_recaptcha_response=g_recaptcha_response,
+                                     remote_ip=remote_ip):
+            send_reset_password_instructions(form.user)
+            if not request.is_json:
+                do_flash(*get_message('PASSWORD_RESET_REQUEST',
+                                      email=form.user.email))
 
     if request.json:
         return _render_json(form, include_user=False)
@@ -331,13 +318,21 @@ def change_password():
     else:
         form = form_class()
 
-    if form.validate_on_submit():
-        after_this_request(_commit)
-        change_user_password(current_user, form.new_password.data)
-        if request.json is None:
-            do_flash(*get_message('PASSWORD_CHANGE'))
-            return redirect(get_url(_security.post_change_view) or
-                            get_url(_security.post_login_view))
+        if form.validate_on_submit():
+
+            # Harc - Oct 28, 2017
+            # Add code to check Recaptcha prior to changing the password
+            g_recaptcha_response = request.values.get('g-recaptcha-response', '')
+            remote_ip = request.remote_addr
+
+            if validate_google_recaptcha(g_recaptcha_response= g_recaptcha_response,
+                                         remote_ip=remote_ip):
+                after_this_request(_commit)
+                change_user_password(current_user, form.new_password.data)
+                if request.json is None:
+                    do_flash(*get_message('PASSWORD_CHANGE'))
+                    return redirect(get_url(_security.post_change_view) or
+                                    get_url(_security.post_login_view))
 
     if request.json:
         form.user = current_user
