@@ -117,7 +117,16 @@ class PasswordFormMixin():
         get_form_field_label('password'), validators=[password_required])
 
 
+class ChangePasswordFormMixin():
+    # Harc Mod - Oct 28, 2017
+    # For Change Password form, having current password just say 'password' isn't very clear
+    # We're going to have that form use this new mixin
+    password = PasswordField(
+        'Current Password', validators=[password_required])
+
+
 class NewPasswordFormMixin():
+
     password = PasswordField(
         get_form_field_label('password'),
         validators=[password_required, password_length])
@@ -266,7 +275,10 @@ class ResetPasswordForm(Form, NewPasswordFormMixin, PasswordConfirmFormMixin):
     submit = SubmitField(get_form_field_label('reset_password'))
 
 
-class ChangePasswordForm(Form, PasswordFormMixin):
+# Harc Mod - Oct 28, 2017
+# Made a ChangePasswordFormMixin to give a better label to current password entry field
+# class ChangePasswordForm(Form, PasswordFormMixin):
+class ChangePasswordForm(Form, ChangePasswordFormMixin):
     """The default change password form"""
 
     new_password = PasswordField(

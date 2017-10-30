@@ -462,8 +462,8 @@ def validate_google_recaptcha (g_recaptcha_response, remote_ip):
 
     validated = False
 
-    google_captcha_secret = os.environ.get('GOOGLE_CAPTCHA_SECRET', '')
-    if not google_captcha_secret:
+    google_recaptcha_secret = os.environ.get('GOOGLE_RECAPTCHA_SECRET', '')
+    if not google_recaptcha_secret:
         do_flash('Error validating recaptcha - there was a server error or the server is not configured for recaptcha',
                  'error')
 
@@ -473,7 +473,7 @@ def validate_google_recaptcha (g_recaptcha_response, remote_ip):
 
     else:
         # Seems we are configured for Google Recaptcha and also we have some kind of token passed in
-        post_data = {'secret': google_captcha_secret,
+        post_data = {'secret': google_recaptcha_secret,
                      'response': g_recaptcha_response,
                      'remote_ip': remote_ip}
 
