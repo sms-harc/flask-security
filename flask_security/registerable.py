@@ -76,6 +76,10 @@ def register_user(**kwargs):
     # else:
     #     kwargs['name'] = separate_names('New User')
 
+    # Harc modification to Flask-Security;
+    # Default new users as Sellers since Buyers sign up during checkout process with explicit role
+    if not kwargs.get('roles', None):
+        kwargs['roles'] = ['sellers']
 
     # Harc modification - let's make sure email is lowercase; this should have been done by Flask-Security
     # esp. for MongoDB engine where fields/queries are all case sensitive
