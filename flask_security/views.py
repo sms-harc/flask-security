@@ -133,7 +133,7 @@ def register():
 
     elif request.method == 'POST':
         # There was an error
-        do_flash ('An error occurred processing the sign up information - please try again', category='error')
+        do_flash('An error occurred processing the sign up information - please try again', category='error')
 
     if request.json:
         return _render_json(form)
@@ -141,6 +141,33 @@ def register():
     return _security.render_template(config_value('REGISTER_USER_TEMPLATE'),
                                      register_user_form=form,
                                      **_ctx('register'))
+
+# Custom Harc Register Method to register users from homepage
+@anonymous_user_required
+def register_ajax():
+    """View function which handles a registration request for a new Service Provider."""
+
+    try:
+        email = request.values.get('signupEmail', None)
+        if not email:
+            raise ValueError('Sorry - no email address was provided to registration')
+
+        business = request.values.get('signupBusiness', None)
+        if not business:
+            raise ValueError('Sorry - no email address was provided to registration')
+
+        register_dict = {'email': email, 'password': email, 'registered_with_business_name': business}
+        user = register_user(**register_dict)
+
+        return jsonify(status=200,
+                       textStatus='ok',
+                       id=str(user.id))
+
+    except Exception as err:
+        return jsonify(status=500,
+                       textStatus="error",
+                       message="{}".format(err)
+                       )
 
 
 def send_login():
@@ -389,5 +416,8 @@ def create_blueprint(state, import_name):
         bp.route(state.confirm_url + slash_url_suffix(state.confirm_url, '<token>'),
                  methods=['GET', 'POST'],
                  endpoint='confirm_email')(confirm_email)
+
+    # Harc route additions
+    bp.route('/register_ajax', methods=['POST'], endpoint='register_ajax')(register_ajax)
 
     return bp
